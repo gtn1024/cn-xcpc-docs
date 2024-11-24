@@ -4,15 +4,15 @@
 
 ### 版本
 
-DOMjudge 8.1.3
+DOMjudge 8.3.1
 
 ### 环境
 
 - **操作系统**
 
-  一般选择 Ubuntu 18.04 LTS / 20.04 LTS / 21.04。
-  
-  不同的系统可能对应不同的 PHP 版本（但是要求 7.1 及以上，以上三者分别对应 7.2、7.3、7.4），需要在下方脚本中注意。
+  一般选择 Debian 12。
+
+  不同的系统可能对应不同的 PHP 版本（但是要求 8.1 及以上，上者对应 8.2），需要在下方脚本中注意。
 
 - **运行模式**
 
@@ -36,12 +36,12 @@ sudo apt-get update
 如果你使用 nginx + php-fpm，请按以下安装。
 
 ```shell
-sudo apt install acl zip unzip mariadb-server nginx \
+sudo apt install libcgroup-dev make acl zip unzip pv mariadb-server nginx \
         php-fpm php-gd php-cli php-intl php-mbstring php-mysql \
-        php-curl php-json php-xml php-zip composer ntp
+        php-curl php-json php-xml php-zip composer ntp python3-yaml python3-requests
 ```
 
-如果你使用 apache2 + php-fpm，请 [TODO] 或者参考[官方文档](https://www.domjudge.org/docs/manual/8.0/install-domserver.html#installation-of-the-domserver)。
+如果你使用 apache2 + php-fpm，请 [TODO] 或者参考[官方文档](https://www.domjudge.org/docs/manual/8.3/install-domserver.html#installation-of-the-domserver)。
 
 为防止后续 `configure` 步骤出错，接下来安装 `judgehost` 所需的部分依赖
 
@@ -50,23 +50,24 @@ sudo apt install make gcc g++ debootstrap libcgroup-dev lsof \
         procps libcurl4-gnutls-dev libjsoncpp-dev libmagic-dev
 ```
 
-
 ### 编译 DOMserver
 
 ```shell
-wget https://www.domjudge.org/releases/domjudge-8.1.3.tar.gz
-tar -zxvf domjudge-8.1.3.tar.gz
-cd domjudge-8.1.3
-./configure
+wget https://www.domjudge.org/releases/domjudge-8.3.1.tar.gz
+tar -zxvf domjudge-8.3.1.tar.gz
+cd domjudge-8.3.1
+./configure --prefix=/opt/domjudge
 make domserver
 sudo make install-domserver
 ```
 
 ### 配置数据库
 
+注意：先设置好数据库的 root 密码，然后执行以下命令。
+
 ```shell
 cd /opt/domjudge/domserver
-sudo bin/dj_setup_database -u root install
+sudo bin/dj_setup_database -u root -p <数据库root密码> install
 ```
 
 ### 配置 MySQL
@@ -96,8 +97,8 @@ sudo systemctl restart mysql
 
 ```shell
 sudo ln -s /opt/domjudge/domserver/etc/nginx-conf /etc/nginx/sites-enabled/domjudge
-sudo ln -s /opt/domjudge/domserver/etc/domjudge-fpm.conf /etc/php/7.4/fpm/pool.d/domjudge.conf
-sudo service php7.4-fpm reload
+sudo ln -s /opt/domjudge/domserver/etc/domjudge-fpm.conf /etc/php/8.2/fpm/pool.d/domjudge.conf
+sudo service php8.2-fpm reload
 sudo service nginx reload
 ```
 
@@ -113,17 +114,17 @@ sudo chown www-data:www-data -R /opt/domjudge/domserver/webapp/var/*
 ```
 
 编辑 `/opt/domjudge/domserver/etc/domjudge-fpm.conf`，取消最后一行 `php_admin_value[date.timezone]` 注释，并将其值设为 `Asia/Shanghai`。
-编辑 `/etc/php/7.4/fpm/php.ini` 搜索 `max_execution_time` 关键字，将其值由30改为300，防止生成队伍密码时 PHP 执行超时。
+编辑 `/etc/php/8.2/fpm/php.ini` 搜索 `max_execution_time` 关键字，将其值由30改为300，防止生成队伍密码时 PHP 执行超时。
 
 ```shell
 sudo service nginx reload
-sudo service php7.4-fpm reload
+sudo service php8.2-fpm reload
 ```
 
 #### apache2 + php-fpm
 
 [TODO]
-此处你可以参考[官方文档](https://www.domjudge.org/docs/manual/8.0/install-domserver.html#installation-of-the-domserver)。
+此处你可以参考[官方文档](https://www.domjudge.org/docs/manual/8.3/install-domserver.html#installation-of-the-domserver)。
 
 ## 配置 domserver
 
